@@ -1,9 +1,12 @@
-import React from 'react'
+import React from "react";
+import PageRoutes from "./routes/PageRoutes";
 
 const App = () => {
   return (
-    <div>App</div>
-  )
-}
+    <div>
+      <PageRoutes />
+    </div>
+  );
+};
 
-export default App
+export default App;
