@@ -13,8 +13,35 @@ const Signin = () => {
 
   const signInWithGoogle = async () => {
     try {
-      await signInWithPopup(auth, googleProvider);
-      const user = auth.currentUser;
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+      const userDocRef = doc(db, "users", user.uid);
+      const userDocSnapshot = await getDoc(userDocRef);
+
+      if (!userDocSnapshot.exists()) {
+        const displayName = user.displayName;
+        const email = user.email;
+        const photoURL = user.photoURL;
+
+        await updateProfile(user, {
+          displayName,
+          photoURL,
+        });
+
+        await setDoc(userDocRef, {
+          uid: user.uid,
+          displayName,
+          email,
+          photoURL,
+        });
+
+        toast.success("Registration Successful");
+      } else {
+        toast.success("Login Successful");
+      }
+      setTimeout(() => {
+        navigate("/chats");
+      }, 1000);
     } catch (error) {
       toast.error(error.message);
     }

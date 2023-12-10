@@ -9,7 +9,7 @@ import {
   updateProfile,
 } from "firebase/auth";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -58,11 +58,51 @@ const Signup = () => {
 
   const signInWithGoogle = async () => {
     try {
-      await signInWithPopup(auth, googleProvider);
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+  
+      // Check if the user is newly created (no existing data in Firestore)
+      const userDocRef = doc(db, "users", user.uid);
+      const userDocSnapshot = await getDoc(userDocRef);
+  
+      if (!userDocSnapshot.exists()) {
+        // Newly registered user
+        const displayName = user.displayName;
+        const email = user.email;
+        const photoURL = user.photoURL;
+  
+        // Update user profile
+        await updateProfile(user, {
+          displayName,
+          photoURL,
+        });
+  
+        // Store user data in Firestore
+        await setDoc(userDocRef, {
+          uid: user.uid,
+          displayName,
+          email,
+          photoURL,
+        });
+  
+        // Additional actions if needed
+  
+        toast.success("Registration Successful");
+      } else {
+        // Existing user, perform additional actions if needed
+  
+        toast.success("Login Successful");
+      }
+  
+      // Redirect the user after login or registration
+      setTimeout(() => {
+        navigate("/chats");
+      }, 1000);
     } catch (error) {
       toast.error(error.message);
     }
   };
+  
   return (
     <>
       <Toaster position="top-center" />
