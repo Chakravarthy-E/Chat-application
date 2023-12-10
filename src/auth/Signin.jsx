@@ -1,18 +1,36 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { auth, googleProvider } from "../config/firebase.js";
 import { toast, Toaster } from "react-hot-toast";
-import { createUserWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 
 const Signin = () => {
+  const [userData, setUserData] = useState({
+    email: "",
+    password: "",
+  });
   const navigate = useNavigate();
 
   const signInWithGoogle = async () => {
     try {
       await signInWithPopup(auth, googleProvider);
+      const user = auth.currentUser;
     } catch (error) {
       toast.error(error.message);
     }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const email = userData.email;
+    const password = userData.password;
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      toast.success("Login Successfull");
+      setTimeout(() => {
+        navigate("/chats");
+      }, 1000);
+    } catch (error) {}
   };
   return (
     <>
@@ -22,7 +40,7 @@ const Signin = () => {
           <h2 className="text-2xl my-2 uppercase text-center font-obi font-semibold tracking-wide">
             Sign in
           </h2>
-          <form>
+          <form onSubmit={handleSubmit}>
             <div className="flex flex-col mb-1">
               <label htmlFor="email text-sm">Email</label>
               <input
@@ -30,6 +48,13 @@ const Signin = () => {
                 placeholder="enter your email"
                 name="email"
                 className="px-3 py-1 rounded outline-none"
+                value={userData.email}
+                onChange={(e) =>
+                  setUserData((data) => ({
+                    ...data,
+                    email: e.target.value,
+                  }))
+                }
               />
             </div>
             <div className="flex flex-col mb-2">
@@ -39,12 +64,22 @@ const Signin = () => {
                 placeholder="password"
                 name="email"
                 className="px-3 py-1 rounded outline-none"
+                value={userData.password}
+                onChange={(e) =>
+                  setUserData((data) => ({
+                    ...data,
+                    password: e.target.value,
+                  }))
+                }
               />
             </div>
+            <button
+              type="submit"
+              className="px-3 py-1 w-full hover:bg-indigo-900  bg-indigo-700 rounded-md"
+            >
+              Login
+            </button>
           </form>
-          <button className="px-3 py-1 hover:bg-indigo-900  bg-indigo-700 rounded-md">
-            Login
-          </button>
           <button
             onClick={signInWithGoogle}
             className="px-3 py-1 hover:bg-indigo-900  bg-indigo-700 rounded-md"
